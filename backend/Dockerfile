@@ -11,6 +11,6 @@ COPY . .
 
 RUN mkdir -p uploads data
 
-EXPOSE 5001
+EXPOSE 8000
 
 CMD ["python", "run.py"]

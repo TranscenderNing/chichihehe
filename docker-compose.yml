@@ -7,16 +7,16 @@ services:
     environment:
       - SECRET_KEY=your-production-secret-key-here
       - JWT_SECRET_KEY=your-jwt-secret-key-here
-      - PORT=5001
+      - PORT=8000
       - FLASK_DEBUG=0
     volumes:
       - backend-uploads:/app/uploads
       - backend-db:/app/data
     ports:
-      - "5001:5001"
+      - "8000:8000"
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5001/api/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
       interval: 10s
       timeout: 5s
       retries: 5
