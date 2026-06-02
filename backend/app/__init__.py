@@ -1,8 +1,12 @@
+import sys
+import os
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from flask import Flask
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager
-import os
 
 db = SQLAlchemy()
 jwt = JWTManager()
@@ -10,7 +14,9 @@ jwt = JWTManager()
 
 def create_app():
     app = Flask(__name__)
-    app.config.from_object('config.Config')
+
+    from config import Config
+    app.config.from_object(Config)
 
     CORS(app, resources={r"/api/*": {"origins": "*"}})
     db.init_app(app)
