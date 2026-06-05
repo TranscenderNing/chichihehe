@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>吃吃喝喝看看听听 - 项目架构总结与部署指南</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: #f5f7fa;
+            color: #333;
+            line-height: 1.8;
+        }
+        .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+        
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #FF6B6B 0%, #ee5a24 100%);
+            color: white;
+            padding: 60px 40px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .header h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .header p { font-size: 1.1em; opacity: 0.9; }
+
+        /* TOC */
+        .toc {
+            background: white;
+            border-radius: 12px;
+            padding: 30px 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        }
+        .toc h2 { color: #FF6B6B; margin-bottom: 16px; font-size: 1.4em; }
+        .toc-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 8px;
+        }
+        .toc a {
+            color: #555;
+            text-decoration: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            transition: all 0.2s;
+            display: block;
+        }
+        .toc a:hover { background: #fff5f5; color: #FF6B6B; }
+
+        /* Section */
+        .section {
+            background: white;
+            border-radius: 12px;
+            padding: 36px 40px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        }
+        .section h2 {
+            color: #FF6B6B;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ffe0e0;
+        }
+        .section h3 {
+            color: #444;
+            font-size: 1.15em;
+            margin: 24px 0 12px;
+        }
+        .section p { margin-bottom: 12px; }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 0.92em;
+        }
+        th {
+            background: #FF6B6B;
+            color: white;
+            padding: 10px 14px;
+            text-align: left;
+            font-weight: 600;
+        }
+        td {
+            padding: 10px 14px;
+            border-bottom: 1px solid #eee;
+        }
+        tr:hover td { background: #fafafa; }
+
+        /* Code */
+        pre {
+            background: #1e1e2e;
+            color: #cdd6f4;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.88em;
+            line-height: 1.6;
+            margin: 14px 0;
+        }
+        code {
+            font-family: 'Fira Code', 'JetBrains Mono', 'Consolas', monospace;
+        }
+        .inline-code {
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #e74c3c;
+        }
+
+        /* Cards */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+            margin: 16px 0;
+        }
+        .card {
+            background: #fafafa;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            padding: 20px;
+            transition: transform 0.2s;
+        }
+        .card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+        .card-icon { font-size: 2em; margin-bottom: 8px; }
+        .card-title { font-weight: 600; margin-bottom: 6px; color: #333; }
+        .card-desc { font-size: 0.9em; color: #666; }
+
+        /* Diagram */
+        .diagram {
+            background: #fafafa;
+            border: 1px solid #e8e8e8;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 14px 0;
+            overflow-x: auto;
+        }
+        .diagram pre {
+            background: transparent;
+            color: #333;
+            padding: 0;
+            margin: 0;
+            font-size: 0.85em;
+        }
+
+        /* Flow */
+        .flow-steps {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 14px 0;
+        }
+        .flow-step {
+            background: #fff5f5;
+            border: 1px solid #ffe0e0;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            color: #FF6B6B;
+            font-weight: 500;
+        }
+        .flow-arrow { color: #ccc; font-size: 1.2em; }
+
+        /* Port cards */
+        .port-card {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            background: #fafafa;
+            border-radius: 10px;
+            margin: 8px 0;
+            border-left: 4px solid #FF6B6B;
+        }
+        .port-num {
+            background: #FF6B6B;
+            color: white;
+            font-size: 1.4em;
+            font-weight: 700;
+            padding: 8px 16px;
+            border-radius: 8px;
+            min-width: 70px;
+            text-align: center;
+        }
+        .port-info { flex: 1; }
+        .port-info strong { display: block; margin-bottom: 2px; }
+        .port-info span { font-size: 0.9em; color: #666; }
+
+        /* Badge */
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+        .badge-dev { background: #e8f5e9; color: #2e7d32; }
+        .badge-prod { background: #e3f2fd; color: #1565c0; }
+        .badge-both { background: #fff3e0; color: #e65100; }
+
+        /* Info box */
+        .info-box {
+            background: #e8f5e9;
+            border-left: 4px solid #4CAF50;
+            padding: 14px 18px;
+            border-radius: 0 8px 8px 0;
+            margin: 14px 0;
+            font-size: 0.92em;
+        }
+        .warning-box {
+            background: #fff3e0;
+            border-left: 4px solid #FF9800;
+            padding: 14px 18px;
+            border-radius: 0 8px 8px 0;
+            margin: 14px 0;
+            font-size: 0.92em;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: #999;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 12px; }
+            .header { padding: 40px 20px; }
+            .header h1 { font-size: 1.6em; }
+            .section { padding: 24px 20px; }
+            .toc { padding: 20px; }
+            .toc-grid { grid-template-columns: 1fr; }
+            .card-grid { grid-template-columns: 1fr; }
+            pre { font-size: 0.8em; padding: 14px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+<!-- Header -->
+<div class="header">
+    <h1>🍽️ 吃吃喝喝看看听听</h1>
+    <p>项目架构总结与部署指南 — React + Flask 全栈应用</p>
+</div>
+
+<!-- TOC -->
+<div class="toc">
+    <h2>📑 目录</h2>
+    <div class="toc-grid">
+        <a href="#overview">1. 项目概述与核心功能</a>
+        <a href="#techstack">2. 技术栈全景</a>
+        <a href="#architecture">3. 项目架构详解</a>
+        <a href="#communication">4. 前后端通信机制</a>
+        <a href="#ports">5. 端口规划与利用</a>
+        <a href="#cors">6. 跨域问题与解决方案</a>
+        <a href="#dev-deploy">7. 开发环境部署</a>
+        <a href="#prod-deploy">8. 生产环境部署（Docker）</a>
+        <a href="#database">9. 数据库设计</a>
+        <a href="#auth">10. 认证与安全机制</a>
+        <a href="#api">11. API 接口文档</a>
+        <a href="#frontend">12. 前端路由与页面结构</a>
+        <a href="#code">13. 核心代码解读</a>
+        <a href="#faq">14. 常见问题与排错</a>
+    </div>
+</div>
+
+<!-- 1. Overview -->
+<div class="section" id="overview">
+    <h2>1. 项目概述与核心功能</h2>
+    <p><strong>吃吃喝喝看看听听</strong> 是一个个人生活记录与评分平台，用于记录用户体验过的餐厅、饮品、电影、音乐等内容，形成个人生活档案。</p>
+    
+    <div class="card-grid">
+        <div class="card">
+            <div class="card-icon">🍽️</div>
+            <div class="card-title">吃</div>
+            <div class="card-desc">记录餐厅、小吃、外卖、酒吧体验</div>
+        </div>
+        <div class="card">
+            <div class="card-icon">☕</div>
+            <div class="card-title">喝</div>
+            <div class="card-desc">记录咖啡馆、奶茶店、酒馆、茶馆体验</div>
+        </div>
+        <div class="card">
+            <div class="card-icon">🎬</div>
+            <div class="card-title">看</div>
+            <div class="card-desc">记录电影、电视剧、纪录片、话剧、展览</div>
+        </div>
+        <div class="card">
+            <div class="card-icon">🎵</div>
+            <div class="card-title">听</div>
+            <div class="card-desc">记录歌曲、专辑、音乐会、演唱会、播客</div>
+        </div>
+        <div class="card">
+            <div class="card-icon">📊</div>
+            <div class="card-title">统计</div>
+            <div class="card-desc">月度/年度统计、评分分布、城市分布、消费分析</div>
+        </div>
+        <div class="card">
+            <div class="card-icon">🔍</div>
+            <div class="card-title">搜索</div>
+            <div class="card-desc">关键词搜索、分类筛选、标签管理</div>
+        </div>
+    </div>
+</div>
+
+<!-- 2. Tech Stack -->
+<div class="section" id="techstack">
+    <h2>2. 技术栈全景</h2>
+    <table>
+        <tr><th>层级</th><th>技术</th><th>版本</th><th>作用</th></tr>
+        <tr><td>前端框架</td><td>React</td><td>18.2</td><td>组件化 UI 开发</td></tr>
+        <tr><td>构建工具</td><td>Vite</td><td>5.0</td><td>快速开发服务器与构建</td></tr>
+        <tr><td>CSS 框架</td><td>TailwindCSS</td><td>3.3</td><td>原子化 CSS 快速开发</td></tr>
+        <tr><td>HTTP 客户端</td><td>Axios</td><td>1.6</td><td>前端 API 请求</td></tr>
+        <tr><td>图表库</td><td>Recharts</td><td>2.10</td><td>数据可视化</td></tr>
+        <tr><td>路由</td><td>React Router DOM</td><td>6.20</td><td>前端单页路由</td></tr>
+        <tr><td>后端框架</td><td>Flask</td><td>3.0</td><td>轻量级 Python Web 框架</td></tr>
+        <tr><td>ORM</td><td>SQLAlchemy</td><td>3.1</td><td>数据库对象关系映射</td></tr>
+        <tr><td>认证</td><td>Flask-JWT-Extended</td><td>4.6</td><td>JWT 令牌认证</td></tr>
+        <tr><td>跨域</td><td>Flask-CORS</td><td>4.0</td><td>处理跨域请求</td></tr>
+        <tr><td>数据库</td><td>SQLite</td><td>-</td><td>轻量级文件数据库</td></tr>
+        <tr><td>容器化</td><td>Docker + Docker Compose</td><td>-</td><td>一键部署</td></tr>
+        <tr><td>Web 服务器</td><td>Nginx</td><td>Alpine</td><td>反向代理 + 静态资源服务</td></tr>
+    </table>
+</div>
+
+<!-- 3. Architecture -->
+<div class="section" id="architecture">
+    <h2>3. 项目架构详解</h2>
+    
+    <h3>3.1 整体架构图</h3>
+    <div class="diagram">
+<pre><code>┌─────────────────────────────────────────────────────────────┐
+│                        用户浏览器                              │
+│                    http://localhost (80)                       │
+└───────────────────────┬─────────────────────────────────────┘
+                        │
+                        ▼
+┌─────────────────────────────────────────────────────────────┐
+│                   Nginx (前端容器)                             │
+│              端口 80 / 静态文件 + 反向代理                       │
+│  ┌─────────────────┐    ┌─────────────────────────────────┐  │
+│  │ 静态文件服务       │    │ /api/* 反向代理                    │  │
+│  │ /usr/share/       │    │ proxy_pass → backend:8000       │  │
+│  │ nginx/html        │    │                                 │  │
+│  └─────────────────┘    └─────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+                        │ /api/* 请求转发
+                        ▼
+┌─────────────────────────────────────────────────────────────┐
+│                   Flask 后端容器  端口 8000                     │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐        │
+│  │ auth     │ │ records  │ │ stats    │ │ upload   │        │
+│  └──────────┘ └──────────┘ └──────────┘ └──────────┘        │
+│                        │                                      │
+│                        ▼                                      │
+│  ┌─────────────────────────────────────────────────────────┐ │
+│  │              SQLAlchemy ORM → SQLite (app.db)             │ │
+│  └─────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────┘</code></pre>
+    </div>
+
+    <h3>3.2 前端架构分层</h3>
+<pre><code>frontend/src/
+├── main.jsx              # 入口文件，挂载 React 根组件
+├── App.jsx               # 路由配置，PrivateRoute 鉴权
+├── components/           # 通用可复用组件
+│   ├── Layout.jsx        # 主布局（侧边栏 + 底部导航 + Outlet）
+│   ├── RecordCard.jsx    # 记录卡片组件
+│   └── RatingStars.jsx   # 评分星级组件
+├── contexts/             # React Context 状态管理
+│   └── AuthContext.jsx   # 认证上下文（user, login, register, logout）
+├── pages/                # 页面组件（路由对应）
+│   ├── LoginPage.jsx     # 登录/注册页
+│   ├── HomePage.jsx      # 首页（四宫格入口 + 最近记录）
+│   ├── RecordListPage.jsx # 记录列表页
+│   ├── NewRecordPage.jsx # 新建记录页
+│   ├── StatsPage.jsx     # 统计页
+│   └── ProfilePage.jsx   # 个人中心页
+└── services/
+    └── api.js            # Axios 实例 + 拦截器（Token 注入 + 401 刷新）</code></pre>
+
+    <h3>3.3 后端架构分层</h3>
+<pre><code>backend/
+├── run.py                # 启动入口（初始化分类 + app.run()）
+├── config.py             # 配置类（数据库URI、JWT密钥等）
+├── requirements.txt      # Python 依赖清单
+├── Dockerfile            # 后端容器构建文件
+├── app/
+│   ├── __init__.py       # 应用工厂函数 create_app()
+│   ├── models.py         # 数据模型（User, Record, Category, Tag, Photo）
+│   └── routes/
+│       ├── auth.py       # 认证路由
+│       ├── records.py    # 记录路由（CRUD）
+│       ├── stats.py      # 统计路由
+│       └── upload.py     # 上传路由</code></pre>
+</div>
+
+<!-- 4. Communication -->
+<div class="section" id="communication">
+    <h2>4. 前后端通信机制</h2>
+    
+    <h3>4.1 通信总览</h3>
+    <p>前端和后端通过 <strong>HTTP RESTful API</strong> 进行通信，所有数据以 <strong>JSON</strong> 格式传输。</p>
+    
+    <div class="flow-steps">
+        <span class="flow-step">React 组件</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">Axios (api.js)</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">请求拦截器注入Token</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">Vite/Nginx 代理</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">Flask 路由</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">SQLAlchemy → SQLite</span>
+    </div>
+
+    <h3>4.2 API 客户端配置（Axios）</h3>
+    <p>前端使用 Axios 库封装了统一的 API 客户端 <code class="inline-code">src/services/api.js</code>：</p>
+<pre><code>import axios from 'axios'
+
+const api = axios.create({
+  baseURL: '/api',        // 所有请求自动加 /api 前缀
+  timeout: 30000,         // 30秒超时
+})
+
+// 请求拦截器：自动注入 JWT Token
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('access_token')
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
+})
+
+// 响应拦截器：自动处理 401 并刷新 Token
+api.interceptors.response.use(
+  (response) => response.data,
+  async (error) => {
+    if (error.response?.status === 401) {
+      const refreshToken = localStorage.getItem('refresh_token')
+      if (refreshToken && !error.config._retry) {
+        error.config._retry = true
+        const res = await axios.post('/api/auth/refresh', {}, {
+          headers: { Authorization: `Bearer ${refreshToken}` }
+        })
+        const newToken = res.data.data.access_token
+        localStorage.setItem('access_token', newToken)
+        error.config.headers.Authorization = `Bearer ${newToken}`
+        return api(error.config)
+      }
+      localStorage.removeItem('access_token')
+      localStorage.removeItem('refresh_token')
+      window.location.href = '/login'
+    }
+    return Promise.reject(error.response?.data || error)
+  }
+)
+
+export default api</code></pre>
+
+    <h3>4.3 统一响应格式</h3>
+    <p>后端所有 API 返回统一的 JSON 结构：</p>
+<pre><code>{
+  "code": 200,
+  "message": "success",
+  "data": { ... }
+}</code></pre>
+</div>
+
+<!-- 5. Ports -->
+<div class="section" id="ports">
+    <h2>5. 端口规划与利用</h2>
+    
+    <div class="port-card">
+        <div class="port-num">80</div>
+        <div class="port-info">
+            <strong>Nginx（前端容器） <span class="badge badge-prod">生产环境</span></strong>
+            <span>对外提供 Web 服务，用户直接访问。托管前端静态文件 + 反向代理 /api 请求</span>
+        </div>
+    </div>
+    <div class="port-card">
+        <div class="port-num">3000</div>
+        <div class="port-info">
+            <strong>Vite Dev Server <span class="badge badge-dev">开发环境</span></strong>
+            <span>前端开发服务器，支持 HMR 热更新，proxy 桥接后端</span>
+        </div>
+    </div>
+    <div class="port-card">
+        <div class="port-num">8000</div>
+        <div class="port-info">
+            <strong>Flask 后端 <span class="badge badge-both">开发 & 生产</span></strong>
+            <span>后端 API 服务端口，处理所有业务逻辑和数据库操作</span>
+        </div>
+    </div>
+
+    <h3>开发环境端口流向</h3>
+    <div class="diagram">
+<pre><code>浏览器 → http://localhost:3000 (Vite Dev Server)
+              │
+              ├── / (前端页面) → Vite 直接返回（HMR）
+              │
+              └── /api/* → Vite Proxy → http://localhost:8000 (Flask)
+                                              │
+                                              └── SQLite (文件数据库)</code></pre>
+    </div>
+
+    <h3>生产环境端口流向</h3>
+    <div class="diagram">
+<pre><code>浏览器 → http://localhost:80 (Nginx)
+              │
+              ├── / (静态文件) → Nginx 直接返回 index.html
+              │
+              └── /api/* → Nginx Proxy → http://backend:8000 (Flask Docker)
+                                              │
+                                              └── SQLite (挂载卷)</code></pre>
+    </div>
+
+    <h3>端口配置文件对照</h3>
+    <table>
+        <tr><th>配置文件</th><th>端口设置</th></tr>
+        <tr><td>frontend/vite.config.js</td><td>server.port: 3000, proxy → http://localhost:8000</td></tr>
+        <tr><td>backend/run.py</td><td>app.run(port=8000), 可通过环境变量 PORT 修改</td></tr>
+        <tr><td>frontend/nginx.conf</td><td>listen 80, proxy_pass → http://backend:8000</td></tr>
+        <tr><td>docker-compose.yml</td><td>前端 80:80, 后端 8000:8000</td></tr>
+    </table>
+</div>
+
+<!-- 6. CORS -->
+<div class="section" id="cors">
+    <h2>6. 跨域问题与解决方案</h2>
+    
+    <h3>什么是跨域（CORS）</h3>
+    <p>浏览器的<strong>同源策略</strong>限制：当请求 URL 的<strong>协议、域名、端口</strong>任一不同就构成跨域。</p>
+    <ul style="margin:12px 0 12px 24px;">
+        <li>开发环境：前端 <code class="inline-code">localhost:3000</code> → 后端 <code class="inline-code">localhost:8000</code> → <strong>端口不同，产生跨域</strong></li>
+        <li>生产环境：Nginx 同域代理 → <strong>无跨域</strong></li>
+    </ul>
+
+    <h3>方案一：开发环境 - Vite Proxy 代理</h3>
+    <div class="info-box">利用 Vite 开发服务器的代理功能，将 /api 请求代理到后端。浏览器认为所有请求都发往 localhost:3000（同源），不存在跨域问题。</div>
+<pre><code>// frontend/vite.config.js
+export default defineConfig({
+  server: {
+    port: 3000,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+      }
+    }
+  }
+})</code></pre>
+
+    <h3>方案二：生产环境 - Nginx 反向代理</h3>
+    <div class="info-box">Nginx 同时托管前端静态文件和后端 API 代理，对外只暴露一个端口（80）。浏览器只访问同一域名和端口，无跨域。</div>
+<pre><code># frontend/nginx.conf
+server {
+    listen 80;
+
+    location / {
+        root /usr/share/nginx/html;
+        try_files $uri $uri/ /index.html;
+    }
+
+    location /api/ {
+        proxy_pass http://backend:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        client_max_body_size 16m;
+    }
+}</code></pre>
+
+    <h3>方案三：后端 CORS 中间件（兜底）</h3>
+    <div class="warning-box">即使有代理方案，后端仍配置了 Flask-CORS 作为兜底，确保直接访问后端端口时不会被浏览器拦截。</div>
+<pre><code># backend/app/__init__.py
+from flask_cors import CORS
+
+CORS(app, resources={r"/api/*": {"origins": "*"}})</code></pre>
+
+    <h3>三种方案对比</h3>
+    <table>
+        <tr><th>特性</th><th>Vite Proxy</th><th>Nginx Proxy</th><th>Flask-CORS</th></tr>
+        <tr><td>适用环境</td><td>开发</td><td>生产</td><td>兜底/任何</td></tr>
+        <tr><td>对浏览器透明</td><td>✅</td><td>✅</td><td>❌（需响应头）</td></tr>
+        <tr><td>暴露后端端口</td><td>否</td><td>否</td><td>是（直接访问时）</td></tr>
+        <tr><td>安全性</td><td>高</td><td>高</td><td>中</td></tr>
+    </table>
+</div>
+
+<!-- 7. Dev Deploy -->
+<div class="section" id="dev-deploy">
+    <h2>7. 开发环境部署</h2>
+    
+    <h3>后端启动</h3>
+<pre><code>cd backend
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python run.py</code></pre>
+    <p>启动后自动：创建 data/ 和 uploads/ 目录 → 初始化数据库表 → 初始化18个子分类 → 监听 0.0.0.0:8000</p>
+
+    <h3>前端启动</h3>
+<pre><code>cd frontend
+npm install
+npm run dev</code></pre>
+    <p>Vite 开发服务器启动在 http://localhost:3000，/api/* 自动代理到后端。</p>
+
+    <h3>开发环境网络拓扑</h3>
+    <div class="diagram">
+<pre><code>┌──────────────┐         ┌──────────────┐         ┌──────────────┐
+│   浏览器      │ ──3000──│  Vite Server │ ──8000──│  Flask 后端   │
+│  localhost    │         │  (前端开发)    │  proxy  │  (API服务)    │
+└──────────────┘         └──────────────┘         └──────┬───────┘
+                                                         ▼
+                                                  ┌──────────────┐
+                                                  │   SQLite     │
+                                                  │  data/app.db │
+                                                  └──────────────┘</code></pre>
+    </div>
+</div>
+
+<!-- 8. Prod Deploy -->
+<div class="section" id="prod-deploy">
+    <h2>8. 生产环境部署（Docker）</h2>
+    
+    <h3>Docker Compose 架构</h3>
+<pre><code># docker-compose.yml
+version: '3.8'
+services:
+  backend:
+    build: ./backend
+    container_name: chichihehe-backend
+    environment:
+      - SECRET_KEY=your-production-secret-key
+      - JWT_SECRET_KEY=your-jwt-secret-key
+      - PORT=8000
+      - FLASK_DEBUG=0
+    volumes:
+      - backend-uploads:/app/uploads
+      - backend-db:/app/data
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 10s
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  backend-uploads:
+  backend-db:</code></pre>
+
+    <h3>前端 Dockerfile（多阶段构建）</h3>
+<pre><code># 第一阶段：构建
+FROM node:18-alpine AS build
+WORKDIR /app
+COPY package.json ./
+RUN npm install
+COPY . .
+RUN npm run build
+
+# 第二阶段：部署
+FROM nginx:alpine
+COPY --from=build /app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]</code></pre>
+
+    <h3>一键部署命令</h3>
+<pre><code># 构建并启动所有服务
+docker-compose up -d --build
+
+# 查看运行状态
+docker-compose ps
+
+# 查看日志
+docker-compose logs -f
+
+# 停止服务
+docker-compose down</code></pre>
+
+    <h3>生产环境网络拓扑</h3>
+    <div class="diagram">
+<pre><code>┌──────────────┐
+│   用户浏览器   │  http://IP:80
+└──────┬───────┘
+       ▼
+┌──────────────────────────────────────────────┐
+│  Docker Network                              │
+│  ┌─────────────────┐   ┌──────────────────┐  │
+│  │ frontend (Nginx) │   │ backend (Flask)  │  │
+│  │ :80 (映射到宿主机)│   │ :8000 (映射)     │  │
+│  │                  │   │                  │  │
+│  │ /api/ → 代理     │──→│ /api/* 路由       │  │
+│  │ 到 backend:8000  │   │ → SQLite 数据库   │  │
+│  └─────────────────┘   └──────────────────┘  │
+│  Volumes: backend-uploads, backend-db         │
+└──────────────────────────────────────────────┘</code></pre>
+    </div>
+</div>
+
+<!-- 9. Database -->
+<div class="section" id="database">
+    <h2>9. 数据库设计</h2>
+    
+    <h3>ER 关系图</h3>
+    <div class="diagram">
+<pre><code>users 1──N records N──M tags
+  │         │
+  │         ├── 1──N photos
+  │         │
+  │         └── N──1 categories
+  │
+  └── 1──N comments</code></pre>
+    </div>
+
+    <h3>数据表说明</h3>
+    <table>
+        <tr><th>表名</th><th>说明</th><th>关键字段</th></tr>
+        <tr><td>users</td><td>用户表</td><td>username, email, password_hash, avatar, bio</td></tr>
+        <tr><td>records</td><td>记录表</td><td>user_id, category_id, title, content, rating, price, city</td></tr>
+        <tr><td>categories</td><td>分类表</td><td>name(吃/喝/看/听), sub_type(餐厅/电影/...)</td></tr>
+        <tr><td>tags</td><td>标签表</td><td>name, user_id</td></tr>
+        <tr><td>record_tags</td><td>记录-标签关联</td><td>record_id, tag_id</td></tr>
+        <tr><td>photos</td><td>照片表</td><td>record_id, url</td></tr>
+        <tr><td>comments</td><td>评论表</td><td>record_id, user_id, content</td></tr>
+    </table>
+</div>
+
+<!-- 10. Auth -->
+<div class="section" id="auth">
+    <h2>10. 认证与安全机制</h2>
+    
+    <h3>JWT 认证流程</h3>
+    <div class="flow-steps">
+        <span class="flow-step">POST /login</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">验证密码</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">生成 JWT</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">存储 localStorage</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">每次请求注入 Token</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">@jwt_required() 验证</span>
+    </div>
+
+    <h3>Token 生命周期</h3>
+    <table>
+        <tr><th>Token</th><th>有效期</th><th>用途</th></tr>
+        <tr><td>Access Token</td><td>2 小时</td><td>访问受保护的 API</td></tr>
+        <tr><td>Refresh Token</td><td>7 天</td><td>刷新 Access Token</td></tr>
+    </table>
+
+    <h3>安全措施</h3>
+    <ul style="margin:12px 0 12px 24px;">
+        <li><strong>密码加密</strong>：Werkzeug 的 generate_password_hash 哈希加密</li>
+        <li><strong>JWT 无状态</strong>：服务端不存储 Token，适合分布式部署</li>
+        <li><strong>请求拦截器</strong>：前端自动注入 Token，自动刷新过期 Token</li>
+        <li><strong>路由守卫</strong>：PrivateRoute 组件保护需登录页面</li>
+        <li><strong>后端装饰器</strong>：@jwt_required() 保护需认证的 API</li>
+    </ul>
+</div>
+
+<!-- 11. API -->
+<div class="section" id="api">
+    <h2>11. API 接口文档</h2>
+    
+    <h3>认证模块 /api/auth</h3>
+    <table>
+        <tr><th>方法</th><th>路径</th><th>说明</th><th>认证</th></tr>
+        <tr><td>POST</td><td>/api/auth/register</td><td>用户注册</td><td>❌</td></tr>
+        <tr><td>POST</td><td>/api/auth/login</td><td>用户登录</td><td>❌</td></tr>
+        <tr><td>POST</td><td>/api/auth/refresh</td><td>刷新 Token</td><td>Refresh Token</td></tr>
+        <tr><td>GET</td><td>/api/auth/profile</td><td>获取用户信息</td><td>✅</td></tr>
+        <tr><td>PUT</td><td>/api/auth/profile</td><td>更新用户信息</td><td>✅</td></tr>
+    </table>
+
+    <h3>记录模块 /api/records</h3>
+    <table>
+        <tr><th>方法</th><th>路径</th><th>说明</th><th>认证</th></tr>
+        <tr><td>GET</td><td>/api/records</td><td>获取记录列表（分页、筛选）</td><td>✅</td></tr>
+        <tr><td>POST</td><td>/api/records</td><td>创建记录</td><td>✅</td></tr>
+        <tr><td>GET</td><td>/api/records/:id</td><td>获取记录详情</td><td>✅</td></tr>
+        <tr><td>PUT</td><td>/api/records/:id</td><td>更新记录</td><td>✅</td></tr>
+        <tr><td>DELETE</td><td>/api/records/:id</td><td>删除记录</td><td>✅</td></tr>
+        <tr><td>POST</td><td>/api/records/:id/favorite</td><td>切换收藏</td><td>✅</td></tr>
+        <tr><td>GET</td><td>/api/records/categories</td><td>获取分类列表</td><td>✅</td></tr>
+        <tr><td>GET</td><td>/api/records/tags</td><td>获取标签列表</td><td>✅</td></tr>
+    </table>
+
+    <h3>统计模块 /api/stats</h3>
+    <table>
+        <tr><th>方法</th><th>路径</th><th>说明</th><th>认证</th></tr>
+        <tr><td>GET</td><td>/api/stats/overview</td><td>总览统计</td><td>✅</td></tr>
+        <tr><td>GET</td><td>/api/stats/monthly</td><td>月度统计</td><td>✅</td></tr>
+        <tr><td>GET</td><td>/api/stats/yearly</td><td>年度统计</td><td>✅</td></tr>
+    </table>
+
+    <h3>上传模块 /api/upload</h3>
+    <table>
+        <tr><th>方法</th><th>路径</th><th>说明</th><th>认证</th></tr>
+        <tr><td>POST</td><td>/api/upload</td><td>上传图片（multipart/form-data）</td><td>✅</td></tr>
+        <tr><td>GET</td><td>/api/upload/files/:filename</td><td>获取图片</td><td>❌</td></tr>
+    </table>
+</div>
+
+<!-- 12. Frontend Routes -->
+<div class="section" id="frontend">
+    <h2>12. 前端路由与页面结构</h2>
+    
+    <table>
+        <tr><th>路径</th><th>页面组件</th><th>认证</th><th>说明</th></tr>
+        <tr><td>/login</td><td>LoginPage</td><td>❌</td><td>登录/注册页</td></tr>
+        <tr><td>/</td><td>HomePage</td><td>✅</td><td>首页四宫格入口</td></tr>
+        <tr><td>/records/:category</td><td>RecordListPage</td><td>✅</td><td>分类记录列表</td></tr>
+        <tr><td>/records/new</td><td>NewRecordPage</td><td>✅</td><td>新建记录表单</td></tr>
+        <tr><td>/record/:id</td><td>RecordDetailPage</td><td>✅</td><td>记录详情</td></tr>
+        <tr><td>/records/edit/:id</td><td>EditRecordPage</td><td>✅</td><td>编辑记录</td></tr>
+        <tr><td>/search</td><td>SearchPage</td><td>✅</td><td>全局搜索</td></tr>
+        <tr><td>/stats</td><td>StatsPage</td><td>✅</td><td>数据统计</td></tr>
+        <tr><td>/profile</td><td>ProfilePage</td><td>✅</td><td>个人中心</td></tr>
+    </table>
+
+    <h3>布局结构</h3>
+    <div class="diagram">
+<pre><code><Layout>
+├── <aside>           # 桌面端：左侧固定侧边栏
+│   ├── Logo           # 应用标题
+│   ├── <nav>          # 导航菜单（首页/搜索/统计/我的）
+│   └── <button>       # 新建记录按钮
+├── <main>             # 主内容区（Outlet 渲染子路由）
+│   └── <Outlet />
+└── <nav>              # 移动端：底部固定导航栏</code></pre>
+    </div>
+</div>
+
+<!-- 13. Core Code -->
+<div class="section" id="code">
+    <h2>13. 核心代码解读</h2>
+    
+    <h3>应用工厂模式 (app/__init__.py)</h3>
+<pre><code>def create_app():
+    app = Flask(__name__)
+    from config import Config
+    app.config.from_object(Config)
+    
+    CORS(app, resources={r"/api/*": {"origins": "*"}})
+    db.init_app(app)
+    jwt.init_app(app)
+    
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+    
+    # 注册路由蓝图
+    app.register_blueprint(auth_bp, url_prefix='/api/auth')
+    app.register_blueprint(records_bp, url_prefix='/api/records')
+    app.register_blueprint(stats_bp, url_prefix='/api/stats')
+    app.register_blueprint(upload_bp, url_prefix='/api/upload')
+    
+    @app.route('/api/health')
+    def health():
+        return {'code': 200, 'message': 'ok'}
+    
+    with app.app_context():
+        db.create_all()
+    return app</code></pre>
+
+    <h3>设计亮点</h3>
+    <ul style="margin:12px 0 12px 24px;">
+        <li><strong>工厂模式</strong>：便于测试和配置切换</li>
+        <li><strong>Blueprint 蓝图</strong>：模块化路由组织</li>
+        <li><strong>Axios 拦截器</strong>：业务代码无需关心 Token 管理</li>
+        <li><strong>双层序列化</strong>：to_dict() 完整数据 + to_brief_dict() 列表精简数据</li>
+    </ul>
+</div>
+
+<!-- 14. FAQ -->
+<div class="section" id="faq">
+    <h2>14. 常见问题与排错</h2>
+    
+    <table>
+        <tr><th>问题</th><th>原因</th><th>解决方案</th></tr>
+        <tr><td>前端请求 404</td><td>后端未启动或端口不匹配</td><td>确认后端运行在 8000 端口，检查 proxy 配置</td></tr>
+        <tr><td>CORS 错误</td><td>直接访问后端端口</td><td>使用 Vite/Nginx proxy，确保 flask-cors 已安装</td></tr>
+        <tr><td>Token 过期卡住</td><td>Refresh Token 也过期了</td><td>重新登录即可</td></tr>
+        <tr><td>Docker 前端白屏</td><td>Nginx 缺少 SPA 路由回退</td><td>添加 try_files $uri $uri/ /index.html</td></tr>
+        <tr><td>数据库文件位置</td><td>-</td><td>开发: backend/data/app.db | Docker: backend-db 卷</td></tr>
+        <tr><td>如何修改端口</td><td>-</td><td>后端: 环境变量 PORT | 前端: vite.config.js | Nginx: nginx.conf</td></tr>
+    </table>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+    <p>🍽️ 吃吃喝喝看看听听 — React + Flask 全栈项目架构文档</p>
+    <p>生成时间：2026年6月</p>
+</div>
+
+</div>
+</body>
+</html>
