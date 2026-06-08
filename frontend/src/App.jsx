@@ -30,6 +30,7 @@ function App() {
             <Route path="records/new" element={<NewRecordPage />} />
             <Route path="record/:id" element={<RecordDetailPage />} />
             <Route path="records/edit/:id" element={<EditRecordPage />} />
+            <Route path="gallery" element={<GalleryPage />} />
             <Route path="search" element={<SearchPage />} />
             <Route path="stats" element={<StatsPage />} />
             <Route path="profile" element={<ProfilePage />} />
