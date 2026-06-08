@@ -32,7 +32,7 @@ export default function RecordCard({ record }) {
 
           <div className="flex items-center gap-2 mt-1">
             {record.category && (
-              <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded">
+              <span className="text-xs bg-primary-50 text-primary-500 px-2 py-0.5 rounded-full">
                 {record.category.icon} {record.category.sub_type}
               </span>
             )}

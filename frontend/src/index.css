@@ -7,7 +7,11 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #fafafa;
+  background:
+    radial-gradient(circle at top left, rgba(253, 164, 175, 0.28), transparent 34%),
+    radial-gradient(circle at top right, rgba(251, 146, 60, 0.18), transparent 30%),
+    linear-gradient(135deg, #fff7f0 0%, #fff1f2 46%, #fdf2f8 100%);
+  color: #3f1d2e;
 }
 
 * {
@@ -23,6 +27,6 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #ddd;
+  background: #fda4af;
   border-radius: 3px;
 }
